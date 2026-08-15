@@ -1,0 +1,261 @@
+.add-page {
+  padding-bottom: calc(70rpx + env(safe-area-inset-bottom));
+}
+
+.intro {
+  margin: 6rpx 4rpx 28rpx;
+}
+
+.intro__title {
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.intro__desc {
+  margin-top: 10rpx;
+  color: #8f98a8;
+  font-size: 24rpx;
+}
+
+.form-card {
+  margin-bottom: 22rpx;
+  padding: 0 28rpx;
+}
+
+.field {
+  padding: 30rpx 0;
+  border-bottom: 1rpx solid #eef0f4;
+}
+
+.field--last {
+  border-bottom: 0;
+}
+
+.field__label {
+  margin-bottom: 17rpx;
+  color: #283246;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.required {
+  margin-right: 5rpx;
+  color: #ff5e69;
+}
+
+.field__hint {
+  margin-top: -8rpx;
+  margin-bottom: 17rpx;
+  color: #99a2b0;
+  font-size: 20rpx;
+  line-height: 1.5;
+}
+
+.field__input,
+.picker-value,
+.money-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 82rpx;
+  padding: 0 22rpx;
+  font-size: 27rpx;
+  background: #f7f8fb;
+  border: 1rpx solid #edf0f4;
+  border-radius: 20rpx;
+}
+
+.field__placeholder {
+  color: #b7bec9;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #303a4d;
+}
+
+.picker-arrow {
+  color: #9aa3b1;
+  font-size: 38rpx;
+}
+
+.money-input {
+  display: flex;
+  align-items: center;
+}
+
+.money-input__symbol {
+  margin-right: 8rpx;
+  color: #384258;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.money-input__control {
+  height: 80rpx;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14rpx;
+}
+
+.category-option {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 116rpx;
+  color: #667084;
+  background: #f8f9fb;
+  border: 2rpx solid transparent;
+  border-radius: 20rpx;
+}
+
+.category-option--active {
+  color: #1677ff;
+  font-weight: 700;
+  background: #edf5ff;
+  border-color: #74aff8;
+}
+
+.category-option__emoji {
+  font-size: 34rpx;
+}
+
+.category-option__name {
+  margin-top: 7rpx;
+  font-size: 20rpx;
+}
+
+.life-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12rpx;
+}
+
+.life-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 66rpx;
+  color: #6c7688;
+  font-size: 22rpx;
+  background: #f7f8fb;
+  border: 1rpx solid #edf0f4;
+  border-radius: 18rpx;
+}
+
+.life-chip--active {
+  color: #1677ff;
+  font-weight: 700;
+  background: #edf5ff;
+  border-color: #73aff8;
+}
+
+.custom-life {
+  display: flex;
+  align-items: center;
+  margin-top: 18rpx;
+  color: #8c96a6;
+  font-size: 22rpx;
+}
+
+.custom-life__input {
+  box-sizing: border-box;
+  width: 120rpx;
+  height: 60rpx;
+  margin: 0 12rpx;
+  color: #233049;
+  text-align: center;
+  background: #f5f7fa;
+  border-radius: 15rpx;
+}
+
+.note-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 130rpx;
+  padding: 20rpx 22rpx;
+  font-size: 25rpx;
+  line-height: 1.6;
+  background: #f7f8fb;
+  border: 1rpx solid #edf0f4;
+  border-radius: 20rpx;
+}
+
+.char-count {
+  margin-top: 10rpx;
+  color: #b0b7c1;
+  font-size: 19rpx;
+  text-align: right;
+}
+
+.preview-card {
+  margin: 24rpx 0;
+  padding: 28rpx;
+  color: #ffffff;
+  background: linear-gradient(135deg, #243a67, #152443);
+  border-radius: 28rpx;
+  box-shadow: 0 14rpx 32rpx rgba(23, 39, 70, 0.18);
+}
+
+.preview-card__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.preview-card__label {
+  color: #80b8ff;
+  font-size: 20rpx;
+}
+
+.preview-card__title {
+  margin-top: 6rpx;
+  font-size: 25rpx;
+  font-weight: 650;
+}
+
+.preview-card__price {
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.preview-card__price text {
+  margin-right: 5rpx;
+  font-size: 23rpx;
+}
+
+.preview-card__rule {
+  margin-top: 24rpx;
+  padding: 18rpx;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 21rpx;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16rpx;
+}
+
+.preview-card__tip {
+  margin-top: 16rpx;
+  color: rgba(255, 255, 255, 0.53);
+  font-size: 19rpx;
+}
+
+.submit-button {
+  margin-top: 30rpx;
+}
+
+.privacy-tip {
+  margin-top: 20rpx;
+  color: #a2aab7;
+  font-size: 20rpx;
+  text-align: center;
+}

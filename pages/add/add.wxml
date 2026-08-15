@@ -1,0 +1,146 @@
+<view class="page-shell add-page">
+  <view class="intro">
+    <view class="intro__title">{{editMode ? '更新物品信息' : '记下你的新物品'}}</view>
+    <view class="intro__desc">填写价格和预计使用时间，即可开始自动计费</view>
+  </view>
+
+  <view class="form-card card">
+    <view class="field">
+      <view class="field__label"><text class="required">*</text>物品名称</view>
+      <input
+        class="field__input"
+        value="{{form.name}}"
+        maxlength="24"
+        placeholder="例如：通勤耳机"
+        placeholder-class="field__placeholder"
+        data-field="name"
+        bindinput="onFieldInput"
+      />
+    </view>
+
+    <view class="field field--last">
+      <view class="field__label"><text class="required">*</text>物品分类</view>
+      <view class="category-grid">
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="category-option {{form.category === item.id ? 'category-option--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="chooseCategory"
+        >
+          <view class="category-option__emoji">{{item.emoji}}</view>
+          <view class="category-option__name">{{item.name}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="form-card card">
+    <view class="field">
+      <view class="field__label"><text class="required">*</text>购入价格</view>
+      <view class="money-input">
+        <text class="money-input__symbol">¥</text>
+        <input
+          class="field__input money-input__control"
+          value="{{form.price}}"
+          type="digit"
+          placeholder="0.00"
+          placeholder-class="field__placeholder"
+          data-field="price"
+          bindinput="onFieldInput"
+        />
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="field__label"><text class="required">*</text>购入日期</view>
+      <picker mode="date" value="{{form.purchaseDate}}" end="{{today}}" bindchange="onDateChange">
+        <view class="picker-value">
+          <text>{{form.purchaseDate}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <view class="field__label"><text class="required">*</text>预计使用寿命</view>
+      <view class="life-options">
+        <view
+          wx:for="{{lifeOptions}}"
+          wx:key="*this"
+          class="life-chip {{form.lifeMonths == item ? 'life-chip--active' : ''}}"
+          data-months="{{item}}"
+          bindtap="chooseLife"
+        >{{item}}个月</view>
+      </view>
+      <view class="custom-life">
+        <text>自定义</text>
+        <input class="custom-life__input" value="{{form.lifeMonths}}" type="number" bindinput="onLifeInput" />
+        <text>个月</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="field__label">预计残值</view>
+      <view class="field__hint">到达使用寿命后，物品预计还能值多少钱</view>
+      <view class="money-input">
+        <text class="money-input__symbol">¥</text>
+        <input
+          class="field__input money-input__control"
+          value="{{form.residualValue}}"
+          type="digit"
+          placeholder="0.00"
+          placeholder-class="field__placeholder"
+          data-field="residualValue"
+          bindinput="onFieldInput"
+        />
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="field__label">已有使用次数</view>
+      <view class="field__hint">用于计算单次使用成本，之后也可以随时打卡</view>
+      <input
+        class="field__input"
+        value="{{form.useCount}}"
+        type="number"
+        placeholder="0"
+        placeholder-class="field__placeholder"
+        data-field="useCount"
+        bindinput="onFieldInput"
+      />
+    </view>
+
+    <view class="field field--last">
+      <view class="field__label">备注</view>
+      <textarea
+        class="note-input"
+        value="{{form.note}}"
+        maxlength="120"
+        auto-height="{{true}}"
+        placeholder="购买渠道、保修时间或想记住的事"
+        placeholder-class="field__placeholder"
+        data-field="note"
+        bindinput="onFieldInput"
+      ></textarea>
+      <view class="char-count">{{form.note.length}} / 120</view>
+    </view>
+  </view>
+
+  <view wx:if="{{preview}}" class="preview-card">
+    <view class="preview-card__head">
+      <view>
+        <view class="preview-card__label">计费预览</view>
+        <view class="preview-card__title">每天约花费</view>
+      </view>
+      <view class="preview-card__price"><text>¥</text>{{preview.dailyCostText}}</view>
+    </view>
+    <view class="preview-card__rule">
+      ( ¥{{preview.priceText}} − ¥{{form.residualValue || '0'}} ) ÷ {{preview.lifeDays}} 天
+    </view>
+    <view class="preview-card__tip">已购入 {{preview.calendarDays}} 天，当前累计成本约 ¥{{preview.accumulatedCostText}}</view>
+  </view>
+
+  <button class="primary-button submit-button" bindtap="submit">{{editMode ? '保存修改' : '添加并开始计费'}}</button>
+  <view class="privacy-tip">所有数据仅保存在你的微信本地存储中</view>
+</view>

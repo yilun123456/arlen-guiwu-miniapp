@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/stats/stats",
+    "pages/add/add",
+    "pages/detail/detail"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#f6f8fc",
+    "navigationBarTitleText": "Arlen归物",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f8fc"
+  },
+  "tabBar": {
+    "color": "#98a0ad",
+    "selectedColor": "#1677ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "我的物品"
+      },
+      {
+        "pagePath": "pages/stats/stats",
+        "text": "计费统计"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

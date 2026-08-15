@@ -1,0 +1,99 @@
+<view wx:if="{{item}}" class="page-shell detail-page">
+  <view class="identity">
+    <view class="identity__icon" style="background: {{item.categoryColor}}1F;">{{item.emoji}}</view>
+    <view class="identity__copy">
+      <view class="identity__name">{{item.name}}</view>
+      <view class="identity__meta">{{item.categoryName}} · {{purchaseDateText}}购入</view>
+    </view>
+    <view class="identity__edit" bindtap="editItem">编辑</view>
+  </view>
+
+  <view class="billing-hero">
+    <view class="billing-hero__glow"></view>
+    <view class="billing-hero__top">
+      <view class="billing-status">
+        <view class="billing-dot {{item.billingStatus === 'paused' ? 'billing-dot--paused' : ''}}"></view>
+        {{item.billingStatus === 'paused' ? '计费已暂停' : '正在计费'}}
+      </view>
+      <view class="billing-days">第 {{item.billableDays}} 天</view>
+    </view>
+    <view class="billing-hero__label">平均每天的拥有成本</view>
+    <view class="billing-hero__price"><text>¥</text>{{item.dailyCostText}}</view>
+    <view class="billing-hero__desc">今日会计入这件物品的使用成本</view>
+
+    <view class="hero-progress">
+      <view class="hero-progress__fill" style="width: {{item.progress}}%;"></view>
+    </view>
+    <view class="hero-progress__copy">
+      <text>购入 ¥{{item.priceText}}</text>
+      <text>寿命进度 {{item.progress}}%</text>
+    </view>
+  </view>
+
+  <view class="detail-actions">
+    <button class="use-button" bindtap="recordUse">
+      <text class="use-button__plus">＋</text>
+      记录一次使用
+    </button>
+    <button class="pause-button" bindtap="toggleBilling">
+      <text>{{item.billingStatus === 'paused' ? '▶' : 'Ⅱ'}}</text>
+      {{item.billingStatus === 'paused' ? '恢复计费' : '暂停计费'}}
+    </button>
+  </view>
+
+  <view class="section-title detail-section-title">成本概览</view>
+  <view class="metrics-grid">
+    <view class="metric-card card">
+      <view class="metric-card__icon metric-card__icon--blue">⌁</view>
+      <view class="metric-card__label">累计成本</view>
+      <view class="metric-card__value">¥{{item.accumulatedCostText}}</view>
+    </view>
+    <view class="metric-card card">
+      <view class="metric-card__icon metric-card__icon--green">◇</view>
+      <view class="metric-card__label">当前估值</view>
+      <view class="metric-card__value">¥{{item.currentValueText}}</view>
+    </view>
+    <view class="metric-card card">
+      <view class="metric-card__icon metric-card__icon--purple">✓</view>
+      <view class="metric-card__label">使用次数</view>
+      <view class="metric-card__value">{{item.useCount}} 次</view>
+    </view>
+    <view class="metric-card card">
+      <view class="metric-card__icon metric-card__icon--orange">÷</view>
+      <view class="metric-card__label">单次成本</view>
+      <view class="metric-card__value">{{item.useCount ? '¥' + item.costPerUseText : '--'}}</view>
+    </view>
+  </view>
+
+  <view class="section-title detail-section-title">计费信息</view>
+  <view class="info-card card">
+    <view class="info-row">
+      <text class="info-row__label">购入价格</text>
+      <text class="info-row__value">¥{{item.priceText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-row__label">预计残值</text>
+      <text class="info-row__value">¥{{item.residualValue}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-row__label">预计使用寿命</text>
+      <text class="info-row__value">{{item.lifeMonths}} 个月</text>
+    </view>
+    <view class="info-row">
+      <text class="info-row__label">预计寿命结束</text>
+      <text class="info-row__value">{{expectedEndText}}</text>
+    </view>
+    <view class="info-row info-row--formula">
+      <view>
+        <view class="info-row__label">日均成本公式</view>
+        <view class="formula">(购入价格 − 预计残值) ÷ 使用寿命</view>
+      </view>
+      <text class="info-row__value info-row__value--blue">¥{{item.dailyCostText}}/天</text>
+    </view>
+  </view>
+
+  <view wx:if="{{item.note}}" class="section-title detail-section-title">备注</view>
+  <view wx:if="{{item.note}}" class="note-card card">{{item.note}}</view>
+
+  <button class="delete-button" bindtap="deleteItem">删除这件物品</button>
+</view>

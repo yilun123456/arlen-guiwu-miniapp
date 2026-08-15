@@ -1,0 +1,127 @@
+<view class="page-shell home-page">
+  <view class="top-copy">
+    <view>
+      <text class="eyebrow">{{today}}</text>
+      <view class="greeting">我的物品</view>
+    </view>
+    <view class="brand-mark">A</view>
+  </view>
+
+  <view class="asset-card">
+    <view class="asset-card__glow asset-card__glow--one"></view>
+    <view class="asset-card__glow asset-card__glow--two"></view>
+    <view class="asset-card__head">
+      <view>
+        <view class="asset-card__label">物品购入总额</view>
+        <view class="asset-card__value"><text class="currency">¥</text>{{summary.totalPriceText || '0.00'}}</view>
+      </view>
+      <view class="count-chip">{{summary.count || 0}} 件</view>
+    </view>
+    <view class="asset-card__metrics">
+      <view class="hero-metric">
+        <view class="hero-metric__label">当前估值</view>
+        <view class="hero-metric__value">¥{{summary.currentValueText || '0.00'}}</view>
+      </view>
+      <view class="metric-line"></view>
+      <view class="hero-metric">
+        <view class="hero-metric__label">今日成本</view>
+        <view class="hero-metric__value">¥{{summary.todayCostText || '0.00'}}</view>
+      </view>
+    </view>
+    <view class="asset-card__foot">按购入价、残值和使用寿命自动计算</view>
+  </view>
+
+  <view class="quick-actions">
+    <view class="quick-action" bindtap="addItem">
+      <view class="quick-action__icon quick-action__icon--blue">＋</view>
+      <view>
+        <view class="quick-action__title">记一件物品</view>
+        <view class="quick-action__desc">开始追踪成本</view>
+      </view>
+    </view>
+    <view class="quick-action" bindtap="openStats">
+      <view class="quick-action__icon quick-action__icon--purple">↗</view>
+      <view>
+        <view class="quick-action__title">查看统计</view>
+        <view class="quick-action__desc">发现消费结构</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="search-box">
+    <text class="search-icon">⌕</text>
+    <input class="search-input" value="{{keyword}}" placeholder="搜索名称、分类或备注" placeholder-class="search-placeholder" bindinput="onSearchInput" />
+    <text wx:if="{{keyword}}" class="clear-search" bindtap="clearSearch">×</text>
+  </view>
+
+  <scroll-view class="category-scroll" scroll-x="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="category-row">
+      <view
+        wx:for="{{categories}}"
+        wx:key="id"
+        class="category-chip {{activeCategory === item.id ? 'category-chip--active' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="chooseCategory"
+      >
+        <text wx:if="{{item.emoji}}" class="category-chip__emoji">{{item.emoji}}</text>{{item.name}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="list-heading">
+    <view class="section-title">物品清单 <text class="list-count">{{visibleItems.length}}</text></view>
+    <view class="sort-button" bindtap="changeSort">{{sortLabel}} <text class="sort-arrow">⇅</text></view>
+  </view>
+
+  <view wx:if="{{visibleItems.length}}" class="item-list">
+    <view
+      wx:for="{{visibleItems}}"
+      wx:key="id"
+      class="item-card card"
+      data-id="{{item.id}}"
+      bindtap="openItem"
+    >
+      <view class="item-card__top">
+        <view class="item-icon" style="background: {{item.categoryColor}}1F; color: {{item.categoryColor}};">{{item.emoji}}</view>
+        <view class="item-main">
+          <view class="item-name-row">
+            <text class="item-name">{{item.name}}</text>
+            <text class="status {{item.billingStatus === 'paused' ? 'status--paused' : ''}}">{{item.billingStatus === 'paused' ? '已暂停' : '计费中'}}</text>
+          </view>
+          <view class="item-meta">{{item.categoryName}} · {{item.purchaseDate}}购入</view>
+        </view>
+        <text class="chevron">›</text>
+      </view>
+
+      <view class="item-numbers">
+        <view class="item-number">
+          <text class="item-number__label">当前估值</text>
+          <text class="item-number__value">¥{{item.currentValueText}}</text>
+        </view>
+        <view class="item-number item-number--right">
+          <text class="item-number__label">日均成本</text>
+          <text class="item-number__value item-number__value--blue">¥{{item.dailyCostText}}</text>
+        </view>
+      </view>
+
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{item.progress}}%;"></view>
+      </view>
+      <view class="progress-copy">
+        <text>已计费 {{item.billableDays}} 天</text>
+        <text>寿命进度 {{item.progress}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else="{{true}}" class="empty-state card">
+    <view class="empty-illustration">
+      <view class="empty-box">□</view>
+      <view class="empty-spark empty-spark--one">✦</view>
+      <view class="empty-spark empty-spark--two">·</view>
+    </view>
+    <view class="empty-title">{{items.length ? '没有找到对应物品' : '从记录第一件物品开始'}}</view>
+    <view class="empty-desc">{{items.length ? '换个关键词或分类试试' : '系统会为你计算日均成本、当前估值和每次使用成本'}}</view>
+    <button wx:if="{{!items.length}}" class="empty-button" bindtap="addItem">添加第一件物品</button>
+  </view>
+</view>
