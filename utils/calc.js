@@ -1,5 +1,5 @@
-const { DAY_MS, daysBetween, toDate } = require('./date')
-const { getCategory } = require('./constants')
+const { daysBetween, toDate } = require('./date')
+const { getCategory, getItemStatus } = require('./constants')
 
 function round(value, digits = 2) {
   const factor = 10 ** digits
@@ -12,77 +12,72 @@ function money(value) {
   return amount.toFixed(2)
 }
 
-function getPausedDays(item, now) {
-  const stored = Math.max(0, Number(item.pausedDays) || 0)
-  if (item.billingStatus !== 'paused' || !item.pausedAt) return stored
-  const currentPause = Math.max(0, Math.floor((toDate(now).getTime() - toDate(item.pausedAt).getTime()) / DAY_MS))
-  return stored + currentPause
-}
-
 function calculateItem(item, now = new Date()) {
   const price = Math.max(0, Number(item.price) || 0)
-  const residualValue = Math.min(price, Math.max(0, Number(item.residualValue) || 0))
-  const lifeMonths = Math.max(1, Number(item.lifeMonths) || 36)
-  const lifeDays = Math.max(1, Math.round(lifeMonths * 365 / 12))
-  const calendarDays = daysBetween(item.purchaseDate, now) + 1
-  const pausedDays = getPausedDays(item, now)
-  const billableDays = Math.max(0, calendarDays - pausedDays)
-  const depreciable = Math.max(0, price - residualValue)
-  const dailyCost = depreciable / lifeDays
-  const accumulatedCost = Math.min(depreciable, dailyCost * billableDays)
-  const currentValue = Math.max(residualValue, price - accumulatedCost)
-  const useCount = Math.max(0, Number(item.useCount) || 0)
-  const progress = Math.min(100, Math.round((billableDays / lifeDays) * 100))
   const category = getCategory(item.category)
+  const status = getItemStatus(item)
+  const today = toDate(now)
+  const purchaseDate = toDate(item.purchaseDate)
+  const retiredDate = item.retiredDate ? toDate(item.retiredDate) : today
+  const effectiveEnd = status.id === 'retired' && retiredDate < today ? retiredDate : today
+
+  // 购入当天算第 1 天：116 元当天为 116 元/天，第二天为 58 元/天。
+  const ownershipDays = daysBetween(purchaseDate, effectiveEnd) + 1
+  const dailyCost = price / ownershipDays
+  const tomorrowDays = status.id === 'retired' ? ownershipDays : ownershipDays + 1
+  const tomorrowDailyCost = price / tomorrowDays
+  const dailyDrop = Math.max(0, dailyCost - tomorrowDailyCost)
+  const useCount = Math.max(0, Math.floor(Number(item.useCount) || 0))
 
   return {
     ...item,
+    itemStatus: status.id,
+    statusName: status.name,
+    statusColor: status.color,
     price,
-    residualValue,
-    lifeMonths,
     useCount,
     categoryName: category.name,
     emoji: category.emoji,
     categoryColor: category.color,
-    lifeDays,
-    calendarDays,
-    billableDays,
+    ownershipDays,
+    calendarDays: daysBetween(purchaseDate, today) + 1,
     dailyCost: round(dailyCost, 4),
-    accumulatedCost: round(accumulatedCost),
-    currentValue: round(currentValue),
-    costPerUse: useCount > 0 ? round(accumulatedCost / useCount) : 0,
-    progress,
+    tomorrowDailyCost: round(tomorrowDailyCost, 4),
+    dailyDrop: round(dailyDrop, 4),
+    costPerUse: useCount > 0 ? round(price / useCount) : 0,
     priceText: money(price),
     dailyCostText: money(dailyCost),
-    accumulatedCostText: money(accumulatedCost),
-    currentValueText: money(currentValue),
-    costPerUseText: useCount > 0 ? money(accumulatedCost / useCount) : '--'
+    tomorrowDailyCostText: money(tomorrowDailyCost),
+    dailyDropText: money(dailyDrop),
+    costPerUseText: useCount > 0 ? money(price / useCount) : '--'
   }
 }
 
 function summarize(items, now = new Date()) {
   const calculated = items.map((item) => calculateItem(item, now))
   const totalPrice = calculated.reduce((sum, item) => sum + item.price, 0)
-  const currentValue = calculated.reduce((sum, item) => sum + item.currentValue, 0)
-  const accumulatedCost = calculated.reduce((sum, item) => sum + item.accumulatedCost, 0)
-  const todayCost = calculated
-    .filter((item) => item.billingStatus !== 'paused' && item.progress < 100)
-    .reduce((sum, item) => sum + item.dailyCost, 0)
+  const totalDailyCost = calculated.reduce((sum, item) => sum + item.dailyCost, 0)
+  const activeItems = calculated.filter((item) => item.itemStatus !== 'retired')
+  const activePrice = activeItems.reduce((sum, item) => sum + item.price, 0)
+  const activeDailyCost = activeItems.reduce((sum, item) => sum + item.dailyCost, 0)
+  const totalUseCount = calculated.reduce((sum, item) => sum + item.useCount, 0)
+  const averageOwnershipDays = calculated.length
+    ? calculated.reduce((sum, item) => sum + item.ownershipDays, 0) / calculated.length
+    : 0
 
   return {
     count: calculated.length,
+    activeCount: activeItems.length,
     totalPrice: round(totalPrice),
-    currentValue: round(currentValue),
-    accumulatedCost: round(accumulatedCost),
-    todayCost: round(todayCost, 4),
-    monthlyCost: round(todayCost * 30),
-    yearlyCost: round(todayCost * 365),
+    activePrice: round(activePrice),
+    totalDailyCost: round(totalDailyCost, 4),
+    activeDailyCost: round(activeDailyCost, 4),
+    totalUseCount,
+    averageOwnershipDays: Math.round(averageOwnershipDays),
     totalPriceText: money(totalPrice),
-    currentValueText: money(currentValue),
-    accumulatedCostText: money(accumulatedCost),
-    todayCostText: money(todayCost),
-    monthlyCostText: money(todayCost * 30),
-    yearlyCostText: money(todayCost * 365)
+    activePriceText: money(activePrice),
+    totalDailyCostText: money(totalDailyCost),
+    activeDailyCostText: money(activeDailyCost)
   }
 }
 

@@ -1,4 +1,4 @@
-const { CATEGORIES, getCategory } = require('../../utils/constants')
+const { CATEGORIES, ITEM_STATUSES } = require('../../utils/constants')
 const { calculateItem, money, summarize } = require('../../utils/calc')
 const { loadItems } = require('../../utils/storage')
 
@@ -6,8 +6,7 @@ Page({
   data: {
     hasItems: false,
     summary: {},
-    activeCount: 0,
-    pausedCount: 0,
+    statusCounts: [],
     categoryStats: [],
     topItems: []
   },
@@ -23,36 +22,34 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: 'Arlen归物｜看见每件物品的真实成本',
+      title: 'Arlen归物｜时间越久，每天越值',
       path: '/pages/home/home'
     }
   },
 
   onShareTimeline() {
-    return {
-      title: 'Arlen归物｜记录物品，了解每日成本'
-    }
+    return { title: 'Arlen归物｜计算每件物品的真实日均成本' }
   },
 
   refresh() {
     const rawItems = loadItems()
     const items = rawItems.map((item) => calculateItem(item))
     const summary = summarize(rawItems)
-    const activeCount = items.filter((item) => item.billingStatus !== 'paused').length
-    const pausedCount = items.length - activeCount
+    const statusCounts = ITEM_STATUSES.map((status) => ({
+      ...status,
+      count: items.filter((item) => item.itemStatus === status.id).length
+    }))
 
     const categoryStats = CATEGORIES.map((category) => {
       const categoryItems = items.filter((item) => item.category === category.id)
       const totalPrice = categoryItems.reduce((sum, item) => sum + item.price, 0)
-      const todayCost = categoryItems
-        .filter((item) => item.billingStatus !== 'paused')
-        .reduce((sum, item) => sum + item.dailyCost, 0)
+      const totalDailyCost = categoryItems.reduce((sum, item) => sum + item.dailyCost, 0)
       return {
         ...category,
         count: categoryItems.length,
         totalPrice,
         totalPriceText: money(totalPrice),
-        todayCostText: money(todayCost),
+        totalDailyCostText: money(totalDailyCost),
         percent: summary.totalPrice > 0 ? Math.max(4, Math.round(totalPrice / summary.totalPrice * 100)) : 0
       }
     }).filter((category) => category.count > 0).sort((a, b) => b.totalPrice - a.totalPrice)
@@ -73,8 +70,7 @@ Page({
     this.setData({
       hasItems: items.length > 0,
       summary,
-      activeCount,
-      pausedCount,
+      statusCounts,
       categoryStats,
       topItems
     })

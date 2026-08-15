@@ -12,46 +12,42 @@
     <view class="billing-hero__glow"></view>
     <view class="billing-hero__top">
       <view class="billing-status">
-        <view class="billing-dot {{item.billingStatus === 'paused' ? 'billing-dot--paused' : ''}}"></view>
-        {{item.billingStatus === 'paused' ? '计费已暂停' : '正在计费'}}
+        <view class="billing-dot billing-dot--{{item.itemStatus}}"></view>{{item.statusName}}
       </view>
-      <view class="billing-days">第 {{item.billableDays}} 天</view>
+      <view class="billing-days">已持有 {{item.ownershipDays}} 天</view>
     </view>
-    <view class="billing-hero__label">平均每天的拥有成本</view>
+    <view class="billing-hero__label">当前平均每天成本</view>
     <view class="billing-hero__price"><text>¥</text>{{item.dailyCostText}}</view>
-    <view class="billing-hero__desc">今日会计入这件物品的使用成本</view>
+    <view class="billing-hero__desc">¥{{item.priceText}} ÷ {{item.ownershipDays}} 天</view>
 
-    <view class="hero-progress">
-      <view class="hero-progress__fill" style="width: {{item.progress}}%;"></view>
-    </view>
-    <view class="hero-progress__copy">
-      <text>购入 ¥{{item.priceText}}</text>
-      <text>寿命进度 {{item.progress}}%</text>
+    <view class="daily-compare">
+      <view>
+        <text>{{item.itemStatus === 'retired' ? '最终日均' : '明天日均'}}</text>
+        <text class="daily-compare__strong">¥{{item.tomorrowDailyCostText}}</text>
+      </view>
+      <view>
+        <text>{{item.itemStatus === 'retired' ? '状态' : '明天再下降'}}</text>
+        <text class="daily-compare__strong">{{item.itemStatus === 'retired' ? '停止累计' : '¥' + item.dailyDropText}}</text>
+      </view>
     </view>
   </view>
 
   <view class="detail-actions">
-    <button class="use-button" bindtap="recordUse">
-      <text class="use-button__plus">＋</text>
-      记录一次使用
-    </button>
-    <button class="pause-button" bindtap="toggleBilling">
-      <text>{{item.billingStatus === 'paused' ? '▶' : 'Ⅱ'}}</text>
-      {{item.billingStatus === 'paused' ? '恢复计费' : '暂停计费'}}
-    </button>
+    <button class="use-button" bindtap="recordUse"><text class="use-button__plus">＋</text>记录一次使用</button>
+    <button class="pause-button" bindtap="changeStatus"><text>●</text>修改状态</button>
   </view>
 
-  <view class="section-title detail-section-title">成本概览</view>
+  <view class="section-title detail-section-title">使用概览</view>
   <view class="metrics-grid">
     <view class="metric-card card">
-      <view class="metric-card__icon metric-card__icon--blue">⌁</view>
-      <view class="metric-card__label">累计成本</view>
-      <view class="metric-card__value">¥{{item.accumulatedCostText}}</view>
+      <view class="metric-card__icon metric-card__icon--blue">¥</view>
+      <view class="metric-card__label">购入价格</view>
+      <view class="metric-card__value">¥{{item.priceText}}</view>
     </view>
     <view class="metric-card card">
-      <view class="metric-card__icon metric-card__icon--green">◇</view>
-      <view class="metric-card__label">当前估值</view>
-      <view class="metric-card__value">¥{{item.currentValueText}}</view>
+      <view class="metric-card__icon metric-card__icon--green">日</view>
+      <view class="metric-card__label">实际持有</view>
+      <view class="metric-card__value">{{item.ownershipDays}} 天</view>
     </view>
     <view class="metric-card card">
       <view class="metric-card__icon metric-card__icon--purple">✓</view>
@@ -65,29 +61,15 @@
     </view>
   </view>
 
-  <view class="section-title detail-section-title">计费信息</view>
+  <view class="section-title detail-section-title">物品信息</view>
   <view class="info-card card">
-    <view class="info-row">
-      <text class="info-row__label">购入价格</text>
-      <text class="info-row__value">¥{{item.priceText}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-row__label">预计残值</text>
-      <text class="info-row__value">¥{{item.residualValue}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-row__label">预计使用寿命</text>
-      <text class="info-row__value">{{item.lifeMonths}} 个月</text>
-    </view>
-    <view class="info-row">
-      <text class="info-row__label">预计寿命结束</text>
-      <text class="info-row__value">{{expectedEndText}}</text>
-    </view>
+    <view class="info-row"><text class="info-row__label">当前状态</text><text class="info-row__value" style="color: {{item.statusColor}};">{{item.statusName}}</text></view>
+    <view class="info-row"><text class="info-row__label">购入日期</text><text class="info-row__value">{{purchaseDateText}}</text></view>
+    <view wx:if="{{retiredDateText}}" class="info-row"><text class="info-row__label">退役日期</text><text class="info-row__value">{{retiredDateText}}</text></view>
+    <view class="info-row"><text class="info-row__label">物品分类</text><text class="info-row__value">{{item.categoryName}}</text></view>
+    <view wx:if="{{item.channel}}" class="info-row"><text class="info-row__label">购买渠道</text><text class="info-row__value">{{item.channel}}</text></view>
     <view class="info-row info-row--formula">
-      <view>
-        <view class="info-row__label">日均成本公式</view>
-        <view class="formula">(购入价格 − 预计残值) ÷ 使用寿命</view>
-      </view>
+      <view><view class="info-row__label">日均成本公式</view><view class="formula">购入价格 ÷ 从购入日起实际持有天数</view></view>
       <text class="info-row__value info-row__value--blue">¥{{item.dailyCostText}}/天</text>
     </view>
   </view>

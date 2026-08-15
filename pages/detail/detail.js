@@ -1,19 +1,14 @@
 const { calculateItem } = require('../../utils/calc')
-const { daysBetween, formatDate, friendlyDate, toDate } = require('../../utils/date')
+const { formatDate, friendlyDate } = require('../../utils/date')
+const { ITEM_STATUSES } = require('../../utils/constants')
 const { getItem, removeItem, upsertItem } = require('../../utils/storage')
-
-function getExpectedEnd(purchaseDate, lifeMonths) {
-  const start = toDate(purchaseDate)
-  const end = new Date(start.getFullYear(), start.getMonth() + Number(lifeMonths), start.getDate())
-  return friendlyDate(end)
-}
 
 Page({
   data: {
     id: '',
     item: null,
     purchaseDateText: '',
-    expectedEndText: ''
+    retiredDateText: ''
   },
 
   onLoad(options) {
@@ -26,7 +21,7 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: 'Arlen归物｜看见每件物品的真实成本',
+      title: 'Arlen归物｜时间越久，每天越值',
       path: '/pages/home/home'
     }
   },
@@ -43,7 +38,7 @@ Page({
     this.setData({
       item,
       purchaseDateText: friendlyDate(item.purchaseDate),
-      expectedEndText: getExpectedEnd(item.purchaseDate, item.lifeMonths)
+      retiredDateText: item.retiredDate ? friendlyDate(item.retiredDate) : ''
     })
     wx.setNavigationBarTitle({ title: item.name })
   },
@@ -58,24 +53,21 @@ Page({
     wx.showToast({ title: '已记录一次使用', icon: 'success' })
   },
 
-  toggleBilling() {
-    const source = getItem(this.data.id)
-    if (!source) return
-    const today = formatDate(new Date())
-
-    if (source.billingStatus === 'paused') {
-      source.pausedDays = (Number(source.pausedDays) || 0) + daysBetween(source.pausedAt, today)
-      source.pausedAt = null
-      source.billingStatus = 'active'
-    } else {
-      source.pausedAt = today
-      source.billingStatus = 'paused'
-    }
-
-    source.updatedAt = Date.now()
-    upsertItem(source)
-    this.refresh()
-    wx.showToast({ title: source.billingStatus === 'paused' ? '计费已暂停' : '已恢复计费', icon: 'none' })
+  changeStatus() {
+    wx.showActionSheet({
+      itemList: ITEM_STATUSES.map((status) => status.name),
+      success: (result) => {
+        const source = getItem(this.data.id)
+        const status = ITEM_STATUSES[result.tapIndex]
+        if (!source || !status) return
+        source.itemStatus = status.id
+        source.retiredDate = status.id === 'retired' ? formatDate(new Date()) : null
+        source.updatedAt = Date.now()
+        upsertItem(source)
+        this.refresh()
+        wx.showToast({ title: `已设为${status.name}`, icon: 'none' })
+      }
+    })
   },
 
   editItem() {
@@ -85,7 +77,7 @@ Page({
   deleteItem() {
     wx.showModal({
       title: '删除这件物品？',
-      content: '删除后，本地计费记录将无法恢复。',
+      content: '删除后，本地记录将无法恢复。',
       confirmText: '删除',
       confirmColor: '#e84d5b',
       success: (result) => {

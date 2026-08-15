@@ -1,7 +1,12 @@
 {
-  "description": "Arlen归物 - 个人物品成本计费小程序",
+  "description": "Arlen归物 - 个人物品日均成本小程序",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "value": "tests",
+        "type": "folder"
+      }
+    ],
     "include": []
   },
   "setting": {

@@ -1,9 +1,7 @@
-const { CATEGORIES } = require('../../utils/constants')
+const { CATEGORIES, ITEM_STATUSES, normalizeItemStatus } = require('../../utils/constants')
 const { calculateItem } = require('../../utils/calc')
 const { createId, getItem, upsertItem } = require('../../utils/storage')
 const { formatDate, toDate } = require('../../utils/date')
-
-const LIFE_OPTIONS = [12, 24, 36, 60]
 
 Page({
   data: {
@@ -11,15 +9,15 @@ Page({
     itemId: '',
     today: '',
     categories: CATEGORIES,
-    lifeOptions: LIFE_OPTIONS,
+    statuses: ITEM_STATUSES,
     preview: null,
     form: {
       name: '',
       category: 'digital',
+      itemStatus: 'using',
       price: '',
       purchaseDate: '',
-      lifeMonths: 36,
-      residualValue: '0',
+      channel: '',
       useCount: '0',
       note: ''
     }
@@ -40,10 +38,10 @@ Page({
         nextData.form = {
           name: item.name,
           category: item.category,
+          itemStatus: normalizeItemStatus(item),
           price: String(item.price),
           purchaseDate: item.purchaseDate,
-          lifeMonths: Number(item.lifeMonths),
-          residualValue: String(item.residualValue || 0),
+          channel: item.channel || '',
           useCount: String(item.useCount || 0),
           note: item.note || ''
         }
@@ -63,12 +61,8 @@ Page({
     this.setData({ 'form.category': event.currentTarget.dataset.id })
   },
 
-  chooseLife(event) {
-    this.setData({ 'form.lifeMonths': Number(event.currentTarget.dataset.months) }, () => this.updatePreview())
-  },
-
-  onLifeInput(event) {
-    this.setData({ 'form.lifeMonths': event.detail.value }, () => this.updatePreview())
+  chooseStatus(event) {
+    this.setData({ 'form.itemStatus': event.currentTarget.dataset.id }, () => this.updatePreview())
   },
 
   onDateChange(event) {
@@ -77,14 +71,16 @@ Page({
 
   updatePreview() {
     const form = this.data.form
-    if (!form.price || Number(form.price) <= 0 || !form.lifeMonths) {
+    if (!form.price || Number(form.price) <= 0 || !form.purchaseDate) {
       this.setData({ preview: null })
       return
     }
+    const previous = this.data.editMode ? getItem(this.data.itemId) : null
     const preview = calculateItem({
       ...form,
-      billingStatus: 'active',
-      pausedDays: 0
+      retiredDate: form.itemStatus === 'retired'
+        ? ((previous && previous.retiredDate) || this.data.today)
+        : null
     })
     this.setData({ preview })
   },
@@ -93,36 +89,42 @@ Page({
     const form = this.data.form
     const name = form.name.trim()
     const price = Number(form.price)
-    const lifeMonths = Number(form.lifeMonths)
-    const residualValue = Number(form.residualValue || 0)
     const useCount = Math.floor(Number(form.useCount || 0))
 
     if (!name) return this.toast('请填写物品名称')
     if (!Number.isFinite(price) || price <= 0) return this.toast('请输入正确的购入价格')
     if (!form.purchaseDate || toDate(form.purchaseDate) > toDate(new Date())) return this.toast('购入日期不能晚于今天')
-    if (!Number.isFinite(lifeMonths) || lifeMonths < 1 || lifeMonths > 600) return this.toast('使用寿命应为 1～600 个月')
-    if (!Number.isFinite(residualValue) || residualValue < 0 || residualValue > price) return this.toast('预计残值需在 0 和购入价之间')
     if (!Number.isFinite(useCount) || useCount < 0) return this.toast('使用次数不能小于 0')
 
     const previous = this.data.editMode ? getItem(this.data.itemId) : null
     const now = Date.now()
+    const retiredDate = form.itemStatus === 'retired'
+      ? ((previous && previous.itemStatus === 'retired' && previous.retiredDate) || this.data.today)
+      : null
     const item = {
       ...(previous || {}),
       id: previous ? previous.id : createId(),
       name,
       category: form.category,
+      itemStatus: form.itemStatus,
       price,
       purchaseDate: form.purchaseDate,
-      lifeMonths,
-      residualValue,
+      retiredDate: retiredDate
+        ? (toDate(retiredDate) >= toDate(form.purchaseDate) ? retiredDate : this.data.today)
+        : null,
+      channel: form.channel.trim(),
       useCount,
       note: form.note.trim(),
-      billingStatus: previous ? previous.billingStatus : 'active',
-      pausedAt: previous ? previous.pausedAt : null,
-      pausedDays: previous ? previous.pausedDays : 0,
       createdAt: previous ? previous.createdAt : now,
       updatedAt: now
     }
+
+    // 删除旧版寿命折旧字段，保存后数据即完成迁移。
+    delete item.lifeMonths
+    delete item.residualValue
+    delete item.billingStatus
+    delete item.pausedAt
+    delete item.pausedDays
 
     upsertItem(item)
     wx.showToast({ title: this.data.editMode ? '修改已保存' : '物品已添加', icon: 'success' })

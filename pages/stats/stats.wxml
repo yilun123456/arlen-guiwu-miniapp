@@ -1,122 +1,81 @@
 <view class="page-shell stats-page">
-  <view class="stats-title">计费统计</view>
-  <view class="stats-subtitle">把购买价格换算成每天真实发生的成本</view>
+  <view class="stats-title">成本统计</view>
+  <view class="stats-subtitle">价格除以实际持有天数，时间越久，每天越值</view>
 
   <view wx:if="{{hasItems}}">
     <view class="overview-card">
       <view class="overview-card__orb"></view>
-      <view class="overview-label">累计拥有成本</view>
-      <view class="overview-value"><text>¥</text>{{summary.accumulatedCostText}}</view>
+      <view class="overview-label">全部物品购入总额</view>
+      <view class="overview-value"><text>¥</text>{{summary.totalPriceText}}</view>
       <view class="overview-grid">
         <view class="overview-metric">
-          <view class="overview-metric__label">今日成本</view>
-          <view class="overview-metric__value">¥{{summary.todayCostText}}</view>
+          <view class="overview-metric__label">当前总日均</view>
+          <view class="overview-metric__value">¥{{summary.totalDailyCostText}}/天</view>
         </view>
         <view class="overview-divider"></view>
         <view class="overview-metric">
-          <view class="overview-metric__label">当前估值</view>
-          <view class="overview-metric__value">¥{{summary.currentValueText}}</view>
+          <view class="overview-metric__label">仍在追踪</view>
+          <view class="overview-metric__value">{{summary.activeCount}} / {{summary.count}} 件</view>
         </view>
       </view>
     </view>
 
     <view class="projection-grid">
       <view class="projection-card card">
-        <view class="projection-icon projection-icon--blue">月</view>
-        <view class="projection-copy">
-          <view class="projection-label">未来 30 天</view>
-          <view class="projection-value">¥{{summary.monthlyCostText}}</view>
-        </view>
+        <view class="projection-icon projection-icon--blue">天</view>
+        <view class="projection-copy"><view class="projection-label">平均持有时长</view><view class="projection-value">{{summary.averageOwnershipDays}} 天</view></view>
       </view>
       <view class="projection-card card">
-        <view class="projection-icon projection-icon--purple">年</view>
-        <view class="projection-copy">
-          <view class="projection-label">未来 365 天</view>
-          <view class="projection-value">¥{{summary.yearlyCostText}}</view>
-        </view>
+        <view class="projection-icon projection-icon--purple">✓</view>
+        <view class="projection-copy"><view class="projection-label">累计使用打卡</view><view class="projection-value">{{summary.totalUseCount}} 次</view></view>
       </view>
     </view>
 
     <view class="status-strip card">
-      <view class="status-strip__item">
-        <view class="status-dot status-dot--active"></view>
-        <text>计费中</text>
-        <text class="status-number">{{activeCount}}</text>
-      </view>
-      <view class="status-strip__line"></view>
-      <view class="status-strip__item">
-        <view class="status-dot status-dot--paused"></view>
-        <text>已暂停</text>
-        <text class="status-number">{{pausedCount}}</text>
-      </view>
-      <view class="status-strip__line"></view>
-      <view class="status-strip__item">
-        <text>共计</text>
-        <text class="status-number">{{summary.count}} 件</text>
+      <view wx:for="{{statusCounts}}" wx:key="id" class="status-strip__item">
+        <view class="status-dot status-dot--{{item.id}}"></view>
+        <text>{{item.name}}</text>
+        <text class="status-number">{{item.count}}</text>
       </view>
     </view>
 
-    <view class="section-head">
-      <view class="section-title">分类构成</view>
-      <view class="section-note">按购入金额</view>
-    </view>
+    <view class="section-head"><view class="section-title">分类构成</view><view class="section-note">按购入金额</view></view>
     <view class="chart-card card">
       <view wx:for="{{categoryStats}}" wx:key="id" class="category-stat">
         <view class="category-stat__head">
           <view class="category-stat__identity">
             <view class="category-stat__emoji" style="background: {{item.color}}1F;">{{item.emoji}}</view>
-            <view>
-              <view class="category-stat__name">{{item.name}}</view>
-              <view class="category-stat__count">{{item.count}} 件 · 每日 ¥{{item.todayCostText}}</view>
-            </view>
+            <view><view class="category-stat__name">{{item.name}}</view><view class="category-stat__count">{{item.count}} 件 · 日均 ¥{{item.totalDailyCostText}}</view></view>
           </view>
           <view class="category-stat__amount">¥{{item.totalPriceText}}</view>
         </view>
-        <view class="bar-track">
-          <view class="bar-fill" style="width: {{item.percent}}%; background: {{item.color}};"></view>
-        </view>
+        <view class="bar-track"><view class="bar-fill" style="width: {{item.percent}}%; background: {{item.color}};"></view></view>
       </view>
     </view>
 
-    <view class="section-head">
-      <view class="section-title">每日成本排行</view>
-      <view class="section-note">Top {{topItems.length}}</view>
-    </view>
+    <view class="section-head"><view class="section-title">日均成本排行</view><view class="section-note">Top {{topItems.length}}</view></view>
     <view class="ranking-card card">
-      <view
-        wx:for="{{topItems}}"
-        wx:key="id"
-        class="ranking-row"
-        data-id="{{item.id}}"
-        bindtap="openItem"
-      >
+      <view wx:for="{{topItems}}" wx:key="id" class="ranking-row" data-id="{{item.id}}" bindtap="openItem">
         <view class="rank-number {{item.rankClass}}">{{item.rank}}</view>
         <view class="rank-emoji" style="background: {{item.categoryColor}}1F;">{{item.emoji}}</view>
         <view class="rank-main">
-          <view class="rank-copy">
-            <text class="rank-name">{{item.name}}</text>
-            <text class="rank-cost">¥{{item.dailyCostText}}/天</text>
-          </view>
-          <view class="rank-track">
-            <view class="rank-fill" style="width: {{item.barPercent}}%;"></view>
-          </view>
+          <view class="rank-copy"><text class="rank-name">{{item.name}}</text><text class="rank-cost">¥{{item.dailyCostText}}/天</text></view>
+          <view class="rank-track"><view class="rank-fill" style="width: {{item.barPercent}}%;"></view></view>
+          <view class="ranking-days">购入 ¥{{item.priceText}} · 已持有 {{item.ownershipDays}} 天</view>
         </view>
       </view>
     </view>
 
     <view class="formula-tip">
       <view class="formula-tip__icon">i</view>
-      <view>
-        <view class="formula-tip__title">计费规则</view>
-        <view class="formula-tip__desc">日均成本 =（购入价 − 预计残值）÷ 预计使用天数；暂停期间不会产生新的成本。</view>
-      </view>
+      <view><view class="formula-tip__title">计算规则</view><view class="formula-tip__desc">日均成本 = 购入价格 ÷ 实际持有天数。购入当天算第1天，第二天除以2；已退役物品停在退役当天。</view></view>
     </view>
   </view>
 
   <view wx:else="{{true}}" class="empty-state card">
     <view class="empty-chart">▥</view>
     <view class="empty-title">还没有可统计的物品</view>
-    <view class="empty-desc">添加物品后，这里会自动呈现每日成本、消费分类和成本排行。</view>
+    <view class="empty-desc">添加物品后，这里会自动呈现总日均、分类构成、状态分布和成本排行。</view>
     <button class="empty-button" bindtap="addItem">添加第一件物品</button>
   </view>
 </view>

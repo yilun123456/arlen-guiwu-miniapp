@@ -113,6 +113,21 @@
   box-shadow: 0 0 0 6rpx rgba(255, 208, 129, 0.14);
 }
 
+.billing-dot--using {
+  background: #65f0bd;
+  box-shadow: 0 0 0 6rpx rgba(101, 240, 189, 0.14);
+}
+
+.billing-dot--collected {
+  background: #c5aaff;
+  box-shadow: 0 0 0 6rpx rgba(197, 170, 255, 0.14);
+}
+
+.billing-dot--retired {
+  background: #c4cad3;
+  box-shadow: 0 0 0 6rpx rgba(196, 202, 211, 0.14);
+}
+
 .billing-hero__label {
   margin-top: 43rpx;
   color: rgba(255, 255, 255, 0.7);
@@ -134,6 +149,38 @@
 .billing-hero__desc {
   color: rgba(255, 255, 255, 0.55);
   font-size: 20rpx;
+}
+
+.daily-compare {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+  margin-top: 34rpx;
+}
+
+.daily-compare view {
+  padding: 18rpx 20rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1rpx solid rgba(255, 255, 255, 0.09);
+  border-radius: 18rpx;
+}
+
+.daily-compare text,
+.daily-compare__strong {
+  display: block;
+}
+
+.daily-compare text {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 18rpx;
+}
+
+.daily-compare__strong {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  font-weight: 700;
 }
 
 .hero-progress {

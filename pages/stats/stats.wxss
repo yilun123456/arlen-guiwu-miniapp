@@ -157,8 +157,9 @@
   border-radius: 50%;
 }
 
-.status-dot--active { background: #16b47f; }
-.status-dot--paused { background: #f1a13f; }
+.status-dot--using { background: #16b47f; }
+.status-dot--collected { background: #8d6be8; }
+.status-dot--retired { background: #98a1af; }
 
 .status-number {
   margin-left: 8rpx;
@@ -325,6 +326,12 @@
   height: 100%;
   background: linear-gradient(90deg, #55abff, #1677ff);
   border-radius: 999rpx;
+}
+
+.ranking-days {
+  margin-top: 7rpx;
+  color: #a0a8b4;
+  font-size: 17rpx;
 }
 
 .formula-tip {
